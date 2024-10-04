@@ -5,7 +5,7 @@ After=network.target
 [Service]
 ExecStart=node bot.js
 ExecReload=node bot.js
-WorkingDirectory=/opt/auto
+WorkingDirectory=/opt/tg_opendata_auto
 KillMode=process
 Restart=always
 RestartSec=5
