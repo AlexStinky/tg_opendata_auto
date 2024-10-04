@@ -1,0 +1,11 @@
+start_message: 'Привет!'
+
+done_button: 'Готово'
+confirm_button: 'Подтвердить'
+delete_button: 'Удалить'
+skip_button: 'Пропустить'
+back_button: 'Назад'
+next_button: 'Далее'
+cancel_button: 'Отменить'
+
+user_url: '<a href="tg://user?id=${id}">${username}</a>'
