@@ -251,7 +251,7 @@ class Opendata extends Queue {
 const opendataService = new Opendata();
 opendataService.findNewNumbers();
 
-setInterval(opendataService.findNewNumbers, 60 * 1000);
+setInterval(() => opendataService.findNewNumbers(), 60 * 1000);
 
 module.exports = {
     opendataService
