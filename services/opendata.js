@@ -175,15 +175,16 @@ class Opendata extends Queue {
                 const res = await axios.request(config);
     
                 if (res.data) {
-                    // const $ = cheerio.load(data);
-                    // const tdElements = $("td");
-                    // tdElements.each((index, element) => {
-                    //     const licensePlate = $(element).text().trim();
-                    //     if (licensePlateRegex.test(licensePlate)) {
-                    //         numbers.push(licensePlate);
-                    //     }
-                    // });
-    
+                    /*const $ = cheerio.load(res.data);
+                    const tdElements = $("td");
+                    tdElements.each((index, element) => {
+                        const licensePlate = $(element).text().trim();
+
+                        if (this.licensePlates_regex.test(licensePlate)) {
+                            numbers.push(licensePlate);
+                        }
+                    });*/
+
                     const regExpNumbers = res.data.match(this.licensePlates_regex);
 
                     if (regExpNumbers !== null) {
@@ -191,7 +192,7 @@ class Opendata extends Queue {
                     }
                 }
             }
-            // }));
+
             return numbers;
         } catch (error) {
             console.log(error);
@@ -220,24 +221,24 @@ class Opendata extends Queue {
             this.allNumbers = new Set(currentNumbers);
     
             const results = this.findMatches(newNumbers);
-            let message = "";
+            let text = "";
 
             for (const key in results) {
                 if (results[key].length > 0) {
-                    message += key + ":\n";
-                    message += results[key].join(", ");
-                    message += "\n\n";
+                    text += key + ":\n";
+                    text += results[key].join(", ");
+                    text += "\n\n";
                 }
             }
 
-            if (message.length > 0) {
+            if (text.length > 0) {
                 const users = await userDBService.getAll({});
 
                 users.forEach((el) => sender.enqueue({
                     chat_id: el.chat_id,
                     message: {
                         type: 'text',
-                        text: message,
+                        text,
                         extra: {}
                     }
                 }));
