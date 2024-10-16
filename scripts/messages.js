@@ -21,6 +21,29 @@ const start = (lang, key = 'start_message') => {
     return message;
 };
 
+const results = (lang, data) => {
+    const message = {
+        type: 'text',
+        text: i18n.t(lang, 'results_message'),
+        extra: {}
+    };
+
+    for (let i = 0; i < data.length; i++) {
+        const element = data[i];
+
+        if (element[1].length > 0) {
+            message.text += '\n\n' + i18n.t(lang, element[0]) +
+                element[1].reduce((acc, el) => {
+                    acc += '\n' + i18n.t(lang, 'numberInfo_message', el);
+
+                    return acc;
+                }, '');
+        }
+    }
+
+    return message;
+};
+
 const userInfo = (lang, user, message_id = null) => {
     const message = {
         type: (message_id) ? 'edit_text' : 'text',
@@ -48,5 +71,6 @@ const userInfo = (lang, user, message_id = null) => {
 
 module.exports = {
     start,
+    results,
     userInfo
 }

@@ -1,5 +1,17 @@
 start_message: 'Привет!'
 
+results_message: 'Обновление:'
+numberInfo_message: '${number} - ${price} ₴ - ${tsc}'
+
+All: '#Все_регионы:'
+Odessa': '#Одесская_область:'
+Ternopol': '#Тернопольская_область:'
+Khmelnitskiy: '#Хмельницкая_область:'
+Vinnica: '#Винницкая_область:'
+Kiev: '#Киев:'
+Kiev_Obl: '#Киевская_область:'
+Zakarpatie: '#Закарпатская_область:'
+
 done_button: 'Готово'
 confirm_button: 'Подтвердить'
 delete_button: 'Удалить'
