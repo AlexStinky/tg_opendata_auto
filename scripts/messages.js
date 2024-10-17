@@ -32,7 +32,6 @@ const results = (lang, data) => {
         const element = data[i];
 
         if (element[1].length > 0) {
-            console.log(element[0], i18n.t(lang, element[0]))
             message.text += '\n\n' + i18n.t(lang, element[0]) +
                 element[1].reduce((acc, el) => {
                     acc += '\n' + i18n.t(lang, 'numberInfo_message', el);
