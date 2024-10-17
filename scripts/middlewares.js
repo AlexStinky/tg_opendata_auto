@@ -1,9 +1,8 @@
-const fs = require('fs');
-
 const messages = require('./messages');
 
 const { sender } = require('../services/sender');
 const { userDBService } = require('../services/db');
+const { opendataService } = require('../services/opendata');
 
 const LANGUAGES = /ru/;
 
@@ -69,7 +68,9 @@ const commands = async (ctx, next) => {
             if (text.includes('/start') || text === ctx.i18n.t('cancel_button')) {
                 await ctx.scene.leave();
 
-                response_message = messages.start(user.lang);
+                response_message = (opendataService.lastData) ?
+                    messages.results(user.lang, Object.entries(opendataService.lastData)) :
+                    messages.start(user.lang);
             }
         }
 

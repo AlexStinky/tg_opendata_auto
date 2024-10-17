@@ -30,6 +30,7 @@ class Opendata extends Queue {
         this.ZAKARPATIE_REG = /KO\d{0,4}KC/;
 
         this.allNumbers = new Set();
+        this.lastData = null;
     }
 
     getOneAtThe(numbers, num) {
@@ -320,6 +321,8 @@ class Opendata extends Queue {
                 const users = await userDBService.getAll({});
 
                 const message = messages.results('ru', Object.entries(data));
+
+                this.lastData = data;
 
                 users.forEach((el) => sender.enqueue({
                     chat_id: el.chat_id,
