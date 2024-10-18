@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const { User } = require('../models/User');
+const { Number } = require('../models/Number');
 
 const DB_CONN = process.env.DB_CONN;
 
@@ -60,7 +61,9 @@ class DBMethods {
 }
 
 const userDBService = new DBMethods(User);
+const numberDBService = new DBMethods(Number);
 
 module.exports = {
-    userDBService
+    userDBService,
+    numberDBService
 }

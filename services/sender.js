@@ -23,6 +23,10 @@ class Sender extends Queue {
         ];
     }
 
+    checkForbidden(text) {
+        return this.FORBIDDEN_ERRORS.some(el => text.includes(el));
+    }
+
     async create(bot) {
         this.bot = bot;
 
@@ -294,14 +298,10 @@ class Sender extends Queue {
             console.log('[sendMessage]', response);
 
             if (response.description) {
-                if (this.FORBIDDEN_ERRORS.includes(response.description)) {
-                    const update = await userDBService.update({ chat_id: chat_id }, {
+                if (this.checkForbidden(response.description)) {
+                    await userDBService.update({ chat_id }, {
                         isActive: false
                     });
-
-                    console.log(update)
-
-                    return update;
                 } else if (response.description.includes("Bad Request: can't parse entities:")) {
                     const temp = {
                         type: message.type,

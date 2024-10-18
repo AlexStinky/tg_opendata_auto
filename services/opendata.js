@@ -9,7 +9,10 @@ const { tscList } = require('../tsc.js');
 
 const { Queue } = require('../modules/queue');
 
-const { userDBService } = require('./db');
+const {
+    userDBService,
+    numberDBService
+} = require('./db');
 const { sender } = require('./sender');
 
 class Opendata extends Queue {
@@ -20,7 +23,7 @@ class Opendata extends Queue {
 
         this.LICENSE_PLATES_REG = /[A-Z]{2}\d{4}[A-Z]{2}/;
 
-        this.ALL_REG = /\b(?:0001|0010|0100|0313|0666|6660|0007|7777|8888|1111|1200|1300|1400|1500|1600|1700|1800|1900|2100|2300|2400|2500|2600|2700|2800|2900|3100|3200|3400|3500|3600|3700|3800|3900|4100|4200|4300|4500|4600|4700|4800|4900|5100|5200|5300|5400|5600|5700|5800|5900|6000|6100|6200|6300|6400|6500|6600|6700|6800|6900|7000|7100|7200|7300|7400|7500|7600|7700|7800|7900|8000|8100|8200|8300|8400|8500|8600|8700|8800|8900|9000|9100|9200|9300|9400|9500|9600|9700|9800)\b/;
+        this.ALL_REG = /(([\w]+)(?:0001|0010|0100|0313|0666|6660|0007|7777|8888|1111|1200|1300|1400|1500|1600|1700|1800|1900|2100|2300|2400|2500|2600|2700|2800|2900|3100|3200|3400|3500|3600|3700|3800|3900|4100|4200|4300|4500|4600|4700|4800|4900|5100|5200|5300|5400|5600|5700|5800|5900|6000|6100|6200|6300|6400|6500|6600|6700|6800|6900|7000|7100|7200|7300|7400|7500|7600|7700|7800|7900|8000|8100|8200|8300|8400|8500|8600|8700|8800|8900|9000|9100|9200|9300|9400|9500|9600|9700|9800)([\w]+))/;
         this.ODESSA_REG = /(?:HH|OO)(?:\d{4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|OP|BH)|(?:12|13|14|15|16|17|18|19|21|23|24)00)/;
         this.TERNOPOL_REG = /(?:HO\d{0,4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|HO|OH))|(?:BO\d{0,4}(?:OP|PP))/;
         this.KHMELNITSKIY_REG = /(?:НХ|ВХ)\d{0,4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|HX|XH|BX|XB)/;
@@ -28,8 +31,9 @@ class Opendata extends Queue {
         this.KIEV_REG = /(?:KA|AA)\d{0,4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|KA|AK)/;
         this.KIEV_OBL_REG = /KI\d{0,4}(?:EB|IK|KI|II|HH|MM|PP|OO|KA|AK|HO|KC|CC|XX|IC)/;
         this.ZAKARPATIE_REG = /KO\d{0,4}KC/;
+        this.CHERNOVITSKAYA_REG = /CE\w{0,4}KC/;
+        this.LVOVSKAYA_REG = /HC\d{0,4}(?:HC|CH|BC|II|KK|OO|MM|HH|PP|AA|KC|XX|CC|IC)/;
 
-        this.allNumbers = new Set();
         this.lastData = null;
     }
 
@@ -150,8 +154,9 @@ class Opendata extends Queue {
     }
 
     async postData(csrfToken) {
+        const numbers = [];
+
         try {
-            const numbers = [];
             // Проходимо по всіх об'єктах у масиві tscList
             // await Promise.all(tscList.map(async (tscItem) => {
             for (const tscItem of tscList) {
@@ -224,13 +229,11 @@ class Opendata extends Queue {
                     });
                 }
             }
-
-            return numbers;
         } catch (error) {
             console.log(error);
-
-            return [];
         }
+
+        return numbers;
     }
 
     async findNewNumbers() {
@@ -245,22 +248,26 @@ class Opendata extends Queue {
             const newNumbers = [];
 
             for (const el of currentNumbers) {
-                if (!this.allNumbers.has(el.number)) {
-                    this.allNumbers.add(el.number);
+                const check = await numberDBService.get({ number: el.number });
+
+                if (!check) {
+                    await numberDBService.create(el);
 
                     newNumbers.push(el);
                 }
             }
 
             const data = {
-                'All': [],
-                'Odessa': [],
-                'Ternopol': [],
-                'Khmelnitskiy': [],
-                'Vinnica': [],
+                'all': [],
+                'Odesskaya_obl': [],
+                'Ternopolskaya_obl': [],
+                'Khmelnitskaya_obl': [],
+                'Vinnickaya_obl': [],
                 'Kiev': [],
-                'Kiev_Obl': [],
-                'Zakarpatie': []
+                'Kievskaya_obl': [],
+                'Zakarpatskaya_obl': [],
+                'Chernovitskaya_obl': [],
+                'Lvovskaya_obl': []
             };
 
             let isEmpty = true;
@@ -269,31 +276,31 @@ class Opendata extends Queue {
                 const { number } = el;
 
                 if (this.ALL_REG.test(number)) {
-                    data['All'].push(el);
+                    data['all'].push(el);
 
                     isEmpty = false;
                 }
 
                 if (this.ODESSA_REG.test(number)) {
-                    data['Odessa'].push(el);
+                    data['Odesskaya_obl'].push(el);
 
                     isEmpty = false;
                 }
 
                 if (this.TERNOPOL_REG.test(number)) {
-                    data['Ternopol'].push(el);
+                    data['Ternopolskaya_obl'].push(el);
 
                     isEmpty = false;
                 }
 
                 if (this.KHMELNITSKIY_REG.test(number)) {
-                    data['Khmelnitskiy'].push(el);
+                    data['Khmelnitskaya_obl'].push(el);
 
                     isEmpty = false;
                 }
 
                 if (this.VENEZIA_REG.test(number)) {
-                    data['Vinnica'].push(el);
+                    data['Vinnickaya_obl'].push(el);
 
                     isEmpty = false;
                 }
@@ -305,20 +312,32 @@ class Opendata extends Queue {
                 }
 
                 if (this.KIEV_OBL_REG.test(number)) {
-                    data['Kiev_Obl'].push(el);
+                    data['Kievskaya_obl'].push(el);
 
                     isEmpty = false;
                 }
 
                 if (this.ZAKARPATIE_REG.test(number)) {
-                    data['Zakarpatie'].push(el);
+                    data['Zakarpatskaya_obl'].push(el);
+
+                    isEmpty = false;
+                }
+
+                if (this.CHERNOVITSKAYA_REG.test(number)) {
+                    data['Chernovitskaya_obl'].push(el);
+
+                    isEmpty = false;
+                }
+
+                if (this.LVOVSKAYA_REG.test(number)) {
+                    data['Lvovskaya_obl'].push(el);
 
                     isEmpty = false;
                 }
             }
 
             if (!isEmpty) {
-                const users = await userDBService.getAll({});
+                const users = await userDBService.getAll({ isActive: true });
 
                 const message = messages.results('ru', Object.entries(data));
 
@@ -332,6 +351,8 @@ class Opendata extends Queue {
         } catch (e) {
             console.log(e);
         }
+
+        return null;
     }
 }
 
