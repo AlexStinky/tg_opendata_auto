@@ -251,7 +251,7 @@ class Opendata extends Queue {
                 const check = await numberDBService.get({ number: el.number });
 
                 if (!check) {
-                    await numberDBService.create(el);
+                    //await numberDBService.create(el);
 
                     newNumbers.push(el);
                 }
@@ -278,11 +278,15 @@ class Opendata extends Queue {
                 if (this.ALL_REG.test(number)) {
                     data['all'].push(el);
 
+                    numberDBService.create(el);
+
                     isEmpty = false;
                 }
 
                 if (this.ODESSA_REG.test(number)) {
                     data['Odesskaya_obl'].push(el);
+
+                    numberDBService.create(el);
 
                     isEmpty = false;
                 }
@@ -290,11 +294,15 @@ class Opendata extends Queue {
                 if (this.TERNOPOL_REG.test(number)) {
                     data['Ternopolskaya_obl'].push(el);
 
+                    numberDBService.create(el);
+
                     isEmpty = false;
                 }
 
                 if (this.KHMELNITSKIY_REG.test(number)) {
                     data['Khmelnitskaya_obl'].push(el);
+
+                    numberDBService.create(el);
 
                     isEmpty = false;
                 }
@@ -302,11 +310,15 @@ class Opendata extends Queue {
                 if (this.VENEZIA_REG.test(number)) {
                     data['Vinnickaya_obl'].push(el);
 
+                    numberDBService.create(el);
+
                     isEmpty = false;
                 }
 
                 if (this.KIEV_REG.test(number)) {
                     data['Kiev'].push(el);
+
+                    numberDBService.create(el);
 
                     isEmpty = false;
                 }
@@ -314,11 +326,15 @@ class Opendata extends Queue {
                 if (this.KIEV_OBL_REG.test(number)) {
                     data['Kievskaya_obl'].push(el);
 
+                    numberDBService.create(el);
+
                     isEmpty = false;
                 }
 
                 if (this.ZAKARPATIE_REG.test(number)) {
                     data['Zakarpatskaya_obl'].push(el);
+
+                    numberDBService.create(el);
 
                     isEmpty = false;
                 }
@@ -326,11 +342,15 @@ class Opendata extends Queue {
                 if (this.CHERNOVITSKAYA_REG.test(number)) {
                     data['Chernovitskaya_obl'].push(el);
 
+                    numberDBService.create(el);
+
                     isEmpty = false;
                 }
 
                 if (this.LVOVSKAYA_REG.test(number)) {
                     data['Lvovskaya_obl'].push(el);
+
+                    numberDBService.create(el);
 
                     isEmpty = false;
                 }
@@ -338,8 +358,9 @@ class Opendata extends Queue {
 
             if (!isEmpty) {
                 const users = await userDBService.getAll({ isActive: true });
+                const temp = Object.entries(data);
 
-                const message = messages.results('ru', Object.entries(data));
+                const message = messages.results('ru', temp);
 
                 this.lastData = data;
 
@@ -352,14 +373,14 @@ class Opendata extends Queue {
             console.log(e);
         }
 
+        setTimeout(() => this.findNewNumbers(), 60 * 1000);
+
         return null;
     }
 }
 
 const opendataService = new Opendata();
 opendataService.findNewNumbers();
-
-setInterval(() => opendataService.findNewNumbers(), 60 * 1000);
 
 module.exports = {
     opendataService
