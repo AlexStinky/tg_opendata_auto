@@ -34,6 +34,8 @@ class Opendata extends Queue {
         this.CHERNOVITSKAYA_REG = /CE\w{0,4}KC/;
         this.LVOVSKAYA_REG = /HC\d{0,4}(?:HC|CH|BC|II|KK|OO|MM|HH|PP|AA|KC|XX|CC|IC)/;
 
+        this.allNumbers = new Set();
+
         this.lastData = null;
     }
 
@@ -126,6 +128,14 @@ class Opendata extends Queue {
         result["mirrored letters"] = this.getAllMirrorLetters(numbers);
 
         return result;
+    }
+
+    async updateCash() {
+        const numbers = await numberDBService.getAll({});
+
+        for (let el of numbers) {
+            this.allNumbers.add(el.number);
+        }
     }
 
     async fetchData() {
@@ -247,16 +257,6 @@ class Opendata extends Queue {
             // find new numbers
             const newNumbers = [];
 
-            for (const el of currentNumbers) {
-                const check = await numberDBService.get({ number: el.number });
-
-                if (!check) {
-                    //await numberDBService.create(el);
-
-                    newNumbers.push(el);
-                }
-            }
-
             const data = {
                 'all': [],
                 'Odesskaya_obl': [],
@@ -272,87 +272,74 @@ class Opendata extends Queue {
 
             let isEmpty = true;
 
-            for (const el of newNumbers) {
+            for (const el of currentNumbers) {
                 const { number } = el;
 
-                if (this.ALL_REG.test(number)) {
-                    data['all'].push(el);
+                const check = this.allNumbers.has(number);
 
-                    numberDBService.create(el);
+                if (!check) {
+                    if (this.ALL_REG.test(number)) {
+                        data['all'].push(el);
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.ODESSA_REG.test(number)) {
+                        data['Odesskaya_obl'].push(el);
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.TERNOPOL_REG.test(number)) {
+                        data['Ternopolskaya_obl'].push(el);
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.KHMELNITSKIY_REG.test(number)) {
+                        data['Khmelnitskaya_obl'].push(el);
 
-                    isEmpty = false;
-                }
-
-                if (this.ODESSA_REG.test(number)) {
-                    data['Odesskaya_obl'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
-                }
-
-                if (this.TERNOPOL_REG.test(number)) {
-                    data['Ternopolskaya_obl'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
-                }
-
-                if (this.KHMELNITSKIY_REG.test(number)) {
-                    data['Khmelnitskaya_obl'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
-                }
-
-                if (this.VENEZIA_REG.test(number)) {
-                    data['Vinnickaya_obl'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
-                }
-
-                if (this.KIEV_REG.test(number)) {
-                    data['Kiev'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
-                }
-
-                if (this.KIEV_OBL_REG.test(number)) {
-                    data['Kievskaya_obl'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
-                }
-
-                if (this.ZAKARPATIE_REG.test(number)) {
-                    data['Zakarpatskaya_obl'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
-                }
-
-                if (this.CHERNOVITSKAYA_REG.test(number)) {
-                    data['Chernovitskaya_obl'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
-                }
-
-                if (this.LVOVSKAYA_REG.test(number)) {
-                    data['Lvovskaya_obl'].push(el);
-
-                    numberDBService.create(el);
-
-                    isEmpty = false;
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.VENEZIA_REG.test(number)) {
+                        data['Vinnickaya_obl'].push(el);
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.KIEV_REG.test(number)) {
+                        data['Kiev'].push(el);
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.KIEV_OBL_REG.test(number)) {
+                        data['Kievskaya_obl'].push(el);
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.ZAKARPATIE_REG.test(number)) {
+                        data['Zakarpatskaya_obl'].push(el);
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.CHERNOVITSKAYA_REG.test(number)) {
+                        data['Chernovitskaya_obl'].push(el);
+    
+                        isEmpty = false;
+                    }
+    
+                    if (this.LVOVSKAYA_REG.test(number)) {
+                        data['Lvovskaya_obl'].push(el);
+    
+                        isEmpty = false;
+                    }
+                } else {
+                    this.allNumbers.add(number);
                 }
             }
 
@@ -368,6 +355,8 @@ class Opendata extends Queue {
                     chat_id: el.chat_id,
                     message
                 }));
+
+                temp.forEach((el) => numberDBService.create(el[1]));
             }
         } catch (e) {
             console.log(e);
@@ -380,6 +369,7 @@ class Opendata extends Queue {
 }
 
 const opendataService = new Opendata();
+opendataService.updateCash();
 opendataService.findNewNumbers();
 
 module.exports = {
