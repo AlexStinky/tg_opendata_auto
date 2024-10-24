@@ -356,7 +356,11 @@ class Opendata extends Queue {
                     message
                 }));
 
-                temp.forEach((el) => numberDBService.create(el[1]));
+                temp.forEach((el) => {
+                    this.allNumbers.add(el.number);
+
+                    numberDBService.create(el[1])
+                });
             }
         } catch (e) {
             console.log(e);
