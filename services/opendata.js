@@ -134,6 +134,8 @@ class Opendata extends Queue {
         const date = new Date();
         date.setDate(date.getDate() - 3);
 
+        this.allNumbers = new Set();
+
         const numbers = await numberDBService.getAll({
             date: {
                 $gt: date
@@ -143,6 +145,8 @@ class Opendata extends Queue {
         for (let el of numbers) {
             this.allNumbers.add(el.number);
         }
+
+        setTimeout(() => this.updateCash(), 60 * 60 * 24 * 3 * 1000);
     }
 
     async fetchData() {
