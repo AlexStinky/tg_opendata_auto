@@ -131,7 +131,14 @@ class Opendata extends Queue {
     }
 
     async updateCash() {
-        const numbers = await numberDBService.getAll({});
+        const date = new Date();
+        date.setDate(date.getDate() - 3);
+
+        const numbers = await numberDBService.getAll({
+            date: {
+                $gt: date
+            }
+        });
 
         for (let el of numbers) {
             this.allNumbers.add(el.number);
@@ -357,11 +364,15 @@ class Opendata extends Queue {
                 }));
 
                 for (let el of temp) {
-                    el[1].forEach(e => {
+                    for (let e of el[1]) {
+                        const c = await numberDBService.get({ number: e.number });
+
                         this.allNumbers.add(e.number);
 
-                        numberDBService.create(e);
-                    });
+                        if (!c) {
+                            numberDBService.create(e);
+                        }
+                    }
                 }
             }
         } catch (e) {
