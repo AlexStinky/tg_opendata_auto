@@ -251,7 +251,7 @@ class Opendata extends Queue {
                 }
             }
         } catch (error) {
-            console.log(error);
+            console.log('[postData]', error);
         }
 
         return numbers;
@@ -263,124 +263,124 @@ class Opendata extends Queue {
             const csrfToken = await this.fetchData();
             const currentNumbers = await this.postData(csrfToken);
 
-            if (currentNumbers.length === 0) return;
+            if (currentNumbers.length !== 0) {
+                // find new numbers
+                const newNumbers = [];
 
-            // find new numbers
-            const newNumbers = [];
+                const data = {
+                    'all': [],
+                    'Odesskaya_obl': [],
+                    'Ternopolskaya_obl': [],
+                    'Khmelnitskaya_obl': [],
+                    'Vinnickaya_obl': [],
+                    'Kiev': [],
+                    'Kievskaya_obl': [],
+                    'Zakarpatskaya_obl': [],
+                    'Chernovitskaya_obl': [],
+                    'Lvovskaya_obl': []
+                };
 
-            const data = {
-                'all': [],
-                'Odesskaya_obl': [],
-                'Ternopolskaya_obl': [],
-                'Khmelnitskaya_obl': [],
-                'Vinnickaya_obl': [],
-                'Kiev': [],
-                'Kievskaya_obl': [],
-                'Zakarpatskaya_obl': [],
-                'Chernovitskaya_obl': [],
-                'Lvovskaya_obl': []
-            };
+                let isEmpty = true;
 
-            let isEmpty = true;
+                for (const el of currentNumbers) {
+                    const { number } = el;
 
-            for (const el of currentNumbers) {
-                const { number } = el;
+                    const check = this.allNumbers.has(number);
 
-                const check = this.allNumbers.has(number);
+                    if (!check) {
+                        if (this.ALL_REG.test(number)) {
+                            data['all'].push(el);
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.ODESSA_REG.test(number)) {
+                            data['Odesskaya_obl'].push(el);
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.TERNOPOL_REG.test(number)) {
+                            data['Ternopolskaya_obl'].push(el);
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.KHMELNITSKIY_REG.test(number)) {
+                            data['Khmelnitskaya_obl'].push(el);
 
-                if (!check) {
-                    if (this.ALL_REG.test(number)) {
-                        data['all'].push(el);
-    
-                        isEmpty = false;
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.VENEZIA_REG.test(number)) {
+                            data['Vinnickaya_obl'].push(el);
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.KIEV_REG.test(number)) {
+                            data['Kiev'].push(el);
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.KIEV_OBL_REG.test(number)) {
+                            data['Kievskaya_obl'].push(el);
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.ZAKARPATIE_REG.test(number)) {
+                            data['Zakarpatskaya_obl'].push(el);
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.CHERNOVITSKAYA_REG.test(number)) {
+                            data['Chernovitskaya_obl'].push(el);
+        
+                            isEmpty = false;
+                        }
+        
+                        if (this.LVOVSKAYA_REG.test(number)) {
+                            data['Lvovskaya_obl'].push(el);
+        
+                            isEmpty = false;
+                        }
+                    } else {
+                        this.allNumbers.add(number);
                     }
-    
-                    if (this.ODESSA_REG.test(number)) {
-                        data['Odesskaya_obl'].push(el);
-    
-                        isEmpty = false;
-                    }
-    
-                    if (this.TERNOPOL_REG.test(number)) {
-                        data['Ternopolskaya_obl'].push(el);
-    
-                        isEmpty = false;
-                    }
-    
-                    if (this.KHMELNITSKIY_REG.test(number)) {
-                        data['Khmelnitskaya_obl'].push(el);
-
-    
-                        isEmpty = false;
-                    }
-    
-                    if (this.VENEZIA_REG.test(number)) {
-                        data['Vinnickaya_obl'].push(el);
-    
-                        isEmpty = false;
-                    }
-    
-                    if (this.KIEV_REG.test(number)) {
-                        data['Kiev'].push(el);
-    
-                        isEmpty = false;
-                    }
-    
-                    if (this.KIEV_OBL_REG.test(number)) {
-                        data['Kievskaya_obl'].push(el);
-    
-                        isEmpty = false;
-                    }
-    
-                    if (this.ZAKARPATIE_REG.test(number)) {
-                        data['Zakarpatskaya_obl'].push(el);
-    
-                        isEmpty = false;
-                    }
-    
-                    if (this.CHERNOVITSKAYA_REG.test(number)) {
-                        data['Chernovitskaya_obl'].push(el);
-    
-                        isEmpty = false;
-                    }
-    
-                    if (this.LVOVSKAYA_REG.test(number)) {
-                        data['Lvovskaya_obl'].push(el);
-    
-                        isEmpty = false;
-                    }
-                } else {
-                    this.allNumbers.add(number);
                 }
-            }
 
-            if (!isEmpty) {
-                const users = await userDBService.getAll({ isActive: true });
-                const temp = Object.entries(data);
+                if (!isEmpty) {
+                    const users = await userDBService.getAll({ isActive: true });
+                    const temp = Object.entries(data);
 
-                const message = messages.results('ru', temp);
+                    const message = messages.results('ru', temp);
 
-                this.lastData = data;
+                    this.lastData = data;
 
-                users.forEach((el) => sender.enqueue({
-                    chat_id: el.chat_id,
-                    message
-                }));
+                    users.forEach((el) => sender.enqueue({
+                        chat_id: el.chat_id,
+                        message
+                    }));
 
-                for (let el of temp) {
-                    for (let e of el[1]) {
-                        const c = await numberDBService.get({ number: e.number });
+                    for (let el of temp) {
+                        for (let e of el[1]) {
+                            const c = await numberDBService.get({ number: e.number });
 
-                        this.allNumbers.add(e.number);
+                            this.allNumbers.add(e.number);
 
-                        if (!c) {
-                            numberDBService.create(e);
+                            if (!c) {
+                                numberDBService.create(e);
+                            }
                         }
                     }
                 }
             }
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            console.log('[findNewNumber]', error);
         }
 
         setTimeout(() => this.findNewNumbers(), 60 * 1000);
