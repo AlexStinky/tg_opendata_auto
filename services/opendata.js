@@ -35,8 +35,7 @@ class Opendata extends Queue {
         this.LVOVSKAYA_REG = /HC\d{0,4}(?:HC|CH|BC|II|KK|OO|MM|HH|PP|AA|KC|XX|CC|IC)/;
 
         this.allNumbers = new Set();
-
-        this.lastData = null;
+        this.tscIndex = 0;
     }
 
     getOneAtThe(numbers, num) {
@@ -145,8 +144,6 @@ class Opendata extends Queue {
         for (let el of numbers) {
             this.allNumbers.add(el.number);
         }
-
-        setTimeout(() => this.updateCash(), 60 * 60 * 24 * 3 * 1000);
     }
 
     async fetchData() {
@@ -175,80 +172,65 @@ class Opendata extends Queue {
     }
 
     async postData(csrfToken) {
+        this.tscIndex = (this.tscIndex + 1) % tscList.length;
         const numbers = [];
 
         try {
-            // Проходимо по всіх об'єктах у масиві tscList
-            // await Promise.all(tscList.map(async (tscItem) => {
-            for (const tscItem of tscList) {
-    
-                let data = qs.stringify({
-                    'region': tscItem.region,
-                    'tsc': tscItem.tscNumber,
-                    'type_venichle': 'light_car_and_truck',
-                    'number': '',
-                    'csrfmiddlewaretoken': csrfToken
+            const tscItem = tscList[this.tscIndex];
+
+            let data = qs.stringify({
+                'region': tscItem.region,
+                'tsc': tscItem.tscNumber,
+                'type_venichle': 'light_car_and_truck',
+                'number': '',
+                'csrfmiddlewaretoken': csrfToken
+            });
+
+            let config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: this.licensePlates_url,
+                headers: {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'Accept-Language': 'en,en-US;q=0.9,ru;q=0.8,uk;q=0.7',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Cache-Control': 'max-age=0',
+                    'Connection': 'keep-alive',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Origin': 'http://opendata.hsc.gov.ua',
+                    'Referer': 'http://opendata.hsc.gov.ua/check-leisure-license-plates/',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'same-origin',
+                    'Sec-Fetch-User': '?1',
+                    'Upgrade-Insecure-Requests': '1',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+                    'sec-ch-ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'Content-Encoding': 'gzip'
+                },
+                data
+            };
+
+            const res = await axios.request(config);
+
+            if (res.data) {
+                const $ = cheerio.load(res.data);
+
+                $('tr').each((index, element) => {
+                    const cells = $(element).find('td');
+
+                    if (cells.length > 0) {
+                        const rowData = {
+                            'number': $(cells[0]).text().trim(),
+                            'price': $(cells[1]).text().trim(),
+                            'tsc': $(cells[2]).text().trim()
+                        };
+
+                        numbers.push(rowData);
+                    }
                 });
-
-                let config = {
-                    method: 'post',
-                    maxBodyLength: Infinity,
-                    url: this.licensePlates_url,
-                    headers: {
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                        'Accept-Language': 'en,en-US;q=0.9,ru;q=0.8,uk;q=0.7',
-                        'Accept-Encoding': 'gzip, deflate, br',
-                        'Cache-Control': 'max-age=0',
-                        'Connection': 'keep-alive',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Origin': 'http://opendata.hsc.gov.ua',
-                        'Referer': 'http://opendata.hsc.gov.ua/check-leisure-license-plates/',
-                        'Sec-Fetch-Dest': 'document',
-                        'Sec-Fetch-Mode': 'navigate',
-                        'Sec-Fetch-Site': 'same-origin',
-                        'Sec-Fetch-User': '?1',
-                        'Upgrade-Insecure-Requests': '1',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-                        'sec-ch-ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
-                        'sec-ch-ua-mobile': '?0',
-                        'sec-ch-ua-platform': '"Windows"'
-                    },
-                    data
-                };
-    
-                const res = await axios.request(config);
-    
-                if (res.data) {
-                    /*const $ = cheerio.load(res.data);
-                    const tdElements = $("td");
-                    tdElements.each((index, element) => {
-                        const licensePlate = $(element).text().trim();
-
-                        console.log(element)
-
-                        if (this.LICENSE_PLATES_REG.test(licensePlate)) {
-                            numbers.push(licensePlate);
-                        }
-                    });
-
-                    console.log(numbers)*/
-
-                    const $ = cheerio.load(res.data);
-
-                    $('tr').each((index, element) => {
-                        const cells = $(element).find('td');
-
-                        if (cells.length > 0) {
-                            const rowData = {
-                                'number': $(cells[0]).text().trim(),
-                                'price': $(cells[1]).text().trim(),
-                                'tsc': $(cells[2]).text().trim()
-                            };
-
-                            numbers.push(rowData);
-                        }
-                    });
-                }
             }
         } catch (error) {
             console.log('[postData]', error);
@@ -259,18 +241,12 @@ class Opendata extends Queue {
 
     async findNewNumbers() {
         try {
-            let timer = Date.now();
             // get all numbers
             const csrfToken = await this.fetchData();
             const currentNumbers = await this.postData(csrfToken);
 
-            console.log('load data:', Date.now() - timer)
-            timer = Date.now();
-
             if (currentNumbers.length !== 0) {
                 // find new numbers
-                const newNumbers = [];
-
                 const data = {
                     'all': [],
                     'Odesskaya_obl': [],
@@ -352,13 +328,8 @@ class Opendata extends Queue {
         
                             isEmpty = false;
                         }
-                    } else {
-                        this.allNumbers.add(number);
                     }
                 }
-
-                console.log('filter data:', Date.now() - timer)
-                timer = Date.now();
 
                 if (!isEmpty) {
                     const users = await userDBService.getAll({ isActive: true });
@@ -366,15 +337,10 @@ class Opendata extends Queue {
 
                     const message = messages.results('ru', temp);
 
-                    this.lastData = data;
-
                     users.forEach((el) => sender.enqueue({
                         chat_id: el.chat_id,
                         message
                     }));
-
-                    console.log('send data:', Date.now() - timer)
-                    timer = Date.now();
 
                     for (let el of temp) {
                         for (let e of el[1]) {
@@ -387,24 +353,22 @@ class Opendata extends Queue {
                             }
                         }
                     }
-
-                    console.log('save data:', Date.now() - timer)
-                    timer = Date.now();
                 }
             }
         } catch (error) {
             console.log('[findNewNumber]', error);
         }
-
-        setTimeout(() => this.findNewNumbers(), 60 * 1000);
-
-        return null;
     }
 }
 
 const opendataService = new Opendata();
-opendataService.updateCash();
-opendataService.findNewNumbers();
+setInterval(() => {
+    opendataService.updateCash().catch(console.log);
+}, 60 * 60 * 24 * 1000)
+setInterval(() => {
+    opendataService.findNewNumbers().catch(console.log);
+}, 5000);
+
 
 module.exports = {
     opendataService
