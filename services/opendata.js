@@ -259,9 +259,13 @@ class Opendata extends Queue {
 
     async findNewNumbers() {
         try {
+            let timer = Date.now();
             // get all numbers
             const csrfToken = await this.fetchData();
             const currentNumbers = await this.postData(csrfToken);
+
+            console.log('load data:', Date.now() - timer)
+            timer = Date.now();
 
             if (currentNumbers.length !== 0) {
                 // find new numbers
@@ -353,6 +357,9 @@ class Opendata extends Queue {
                     }
                 }
 
+                console.log('filter data:', Date.now() - timer)
+                timer = Date.now();
+
                 if (!isEmpty) {
                     const users = await userDBService.getAll({ isActive: true });
                     const temp = Object.entries(data);
@@ -366,6 +373,9 @@ class Opendata extends Queue {
                         message
                     }));
 
+                    console.log('send data:', Date.now() - timer)
+                    timer = Date.now();
+
                     for (let el of temp) {
                         for (let e of el[1]) {
                             const c = await numberDBService.get({ number: e.number });
@@ -373,10 +383,13 @@ class Opendata extends Queue {
                             this.allNumbers.add(e.number);
 
                             if (!c) {
-                                numberDBService.create(e);
+                                await numberDBService.create(e);
                             }
                         }
                     }
+
+                    console.log('save data:', Date.now() - timer)
+                    timer = Date.now();
                 }
             }
         } catch (error) {
