@@ -23,16 +23,19 @@ class Opendata extends Queue {
 
         this.LICENSE_PLATES_REG = /[A-Z]{2}\d{4}[A-Z]{2}/;
 
-        this.ALL_REG = /(([\w]+)(?:0001|0010|0100|0313|0666|6660|0007|0077|7700|7000|0777|7770|7777|8888|1111|1200|1300|1400|1500|1600|1700|1800|1900|2100|2300|2400|2500|2600|2700|2800|2900|3100|3200|3400|3500|3600|3700|3800|3900|4100|4200|4300|4500|4600|4700|4800|4900|5100|5200|5300|5400|5600|5700|5800|5900|6000|6100|6200|6300|6400|6500|6600|6700|6800|6900|7000|7100|7200|7300|7400|7500|7600|7700|7800|7900|8000|8100|8200|8300|8400|8500|8600|8700|8800|8900|9000|9100|9200|9300|9400|9500|9600|9700|9800)([\w]+))/;
+        this.ALL_REG = /(([\w]+)(?:0001|0010|0100|0666|6660|0007|0077|7700|7000|0777|7770|7777|0770|0880|8888|1111)([\w]+))/;
         this.ODESSA_REG = /(?:HH|OO)(?:\d{4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|OP|BH)|(?:12|13|14|15|16|17|18|19|21|23|24)00)/;
         this.TERNOPOL_REG = /(?:HO\d{0,4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|HO|OH))|(?:BO\d{0,4}(?:OP|PP))/;
         this.KHMELNITSKIY_REG = /(?:НХ|ВХ)\d{0,4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|HX|XH|BX|XB)/;
-        this.VENEZIA_REG = /KB\d{0,4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|KB|BK)/;
+        this.VINIZKA_REG = /KB\d{0,4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|KB|BK)/;
         this.KIEV_REG = /(?:KA|AA)\d{0,4}(?:AA|BB|EE|II|KK|MM|HH|OO|PP|CC|TT|XX|KA|AK)/;
         this.KIEV_OBL_REG = /KI\d{0,4}(?:EB|IK|KI|II|HH|MM|PP|OO|KA|AK|HO|KC|CC|XX|IC)/;
         this.ZAKARPATIE_REG = /KO\d{0,4}KC/;
         this.CHERNOVITSKAYA_REG = /CE\w{0,4}KC/;
         this.LVOVSKAYA_REG = /HC\d{0,4}(?:HC|CH|BC|II|KK|OO|MM|HH|PP|AA|KC|XX|CC|IC)/;
+        this.KHARKIWSKA = /KX\d{0,4}KX/
+        this.DNIPRO = /KE\d{0,4}HT/
+        this.VOLYNSKA = /KC\d{0,4}KC/
 
         this.allNumbers = new Set();
         this.tscIndex = 0;
@@ -133,17 +136,18 @@ class Opendata extends Queue {
         const date = new Date();
         date.setDate(date.getDate() - 3);
 
-        this.allNumbers = new Set();
-
-        const numbers = await numberDBService.getAll({
+        await numberDBService.deleteAll({
             date: {
-                $gt: date
+                $lt: date
             }
-        });
+        })
+        const numbers = await numberDBService.getAll({});
 
+        const newNumbers = new Set();
         for (let el of numbers) {
             this.allNumbers.add(el.number);
         }
+        this.allNumbers = newNumbers;
     }
 
     async fetchData() {
@@ -257,7 +261,10 @@ class Opendata extends Queue {
                     'Kievskaya_obl': [],
                     'Zakarpatskaya_obl': [],
                     'Chernovitskaya_obl': [],
-                    'Lvovskaya_obl': []
+                    'Lvovskaya_obl': [],
+                    'Kharkiwska_obl': [],
+                    'Dnipro_obl': [],
+                    'Volynska_obl': [],
                 };
 
                 let isEmpty = true;
@@ -293,7 +300,7 @@ class Opendata extends Queue {
                             isEmpty = false;
                         }
         
-                        if (this.VENEZIA_REG.test(number)) {
+                        if (this.VINIZKA_REG.test(number)) {
                             data['Vinnickaya_obl'].push(el);
         
                             isEmpty = false;
@@ -328,6 +335,24 @@ class Opendata extends Queue {
         
                             isEmpty = false;
                         }
+
+                        if (this.KHARKIWSKA.test(number)) {
+                            data['Kharkiwska_obl'].push(el);
+
+                            isEmpty = false;
+                        }
+
+                        if (this.DNIPRO.test(number)) {
+                            data['Dnipro_obl'].push(el);
+
+                            isEmpty = false;
+                        }
+
+                        if (this.VOLYNSKA.test(number)) {
+                            data['Volynska_obl'].push(el);
+
+                            isEmpty = false;
+                        }
                     }
                 }
 
@@ -344,10 +369,9 @@ class Opendata extends Queue {
 
                     for (let el of temp) {
                         for (let e of el[1]) {
-                            const c = await numberDBService.get({ number: e.number });
-
                             this.allNumbers.add(e.number);
 
+                            const c = await numberDBService.get({ number: e.number });
                             if (!c) {
                                 await numberDBService.create(e);
                             }
@@ -362,6 +386,7 @@ class Opendata extends Queue {
 }
 
 const opendataService = new Opendata();
+opendataService.updateCash().catch(console.log);
 setInterval(() => {
     opendataService.updateCash().catch(console.log);
 }, 60 * 60 * 24 * 1000)

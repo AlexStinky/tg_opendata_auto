@@ -16,6 +16,7 @@ const messages = require('./scripts/messages');
 
 const { sender } = require('./services/sender');
 const { opendataService } = require('./services/opendata');
+const {userDBService} = require("./services/db");
 
 const stage = new Stage([]);
 
@@ -64,7 +65,10 @@ bot.telegram.getMe().then((botInfo) => {
     console.log(`Username: @${botUsername}`);
 });
 
-sender.create(bot);
+sender.create(bot).then(() => {
+    bot.telegram.sendMessage('5782842720', 'Bot started');
+});
+
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
