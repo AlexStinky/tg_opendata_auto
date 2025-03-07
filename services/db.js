@@ -28,8 +28,10 @@ class DBMethods {
 
     async getAll(req, score = null, sort = null, limit = 0) {
         return (limit) ?
-            await this.Model.find(req, score).sort(sort).limit(limit) : (sort) ?
-            await this.Model.find(req).sort(sort) : await this.Model.find(req);
+            await this.Model.find(req, score).sort(sort).limit(limit) :
+            (sort) ?
+                await this.Model.find(req).sort(sort) :
+                await this.Model.find(req);
     }
 
     async update(req, update, returnDocument = 'before', upsert) {

@@ -145,7 +145,7 @@ class Opendata extends Queue {
 
         const newNumbers = new Set();
         for (let el of numbers) {
-            this.allNumbers.add(el.number);
+            newNumbers.add(el.number);
         }
         this.allNumbers = newNumbers;
     }
