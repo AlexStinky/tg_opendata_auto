@@ -36,6 +36,7 @@ class Opendata extends Queue {
         this.KHARKIWSKA = /KX\d{0,4}KX/
         this.DNIPRO = /KE\d{0,4}HT/
         this.VOLYNSKA = /KC\d{0,4}KC/
+        this.ELECTRIC = /ОО\d{0,4}QO/
 
         this.allNumbers = new Set();
         this.tscIndex = 0;
@@ -175,7 +176,8 @@ class Opendata extends Queue {
         }
     }
 
-    async postData(csrfToken) {
+    // type: 'electric_car'|'light_car_and_truck'
+    async postData(csrfToken, type) {
         this.tscIndex = (this.tscIndex + 1) % tscList.length;
         const numbers = [];
 
@@ -185,7 +187,7 @@ class Opendata extends Queue {
             let data = qs.stringify({
                 'region': tscItem.region,
                 'tsc': tscItem.tscNumber,
-                'type_venichle': 'light_car_and_truck',
+                'type_venichle': type,
                 'number': '',
                 'csrfmiddlewaretoken': csrfToken
             });
@@ -247,7 +249,10 @@ class Opendata extends Queue {
         try {
             // get all numbers
             const csrfToken = await this.fetchData();
-            const currentNumbers = await this.postData(csrfToken);
+            const currentNumbers = [
+                ...await this.postData(csrfToken, 'electric_car'),
+                ...await this.postData(csrfToken, 'light_car_and_truck'),
+            ]
 
             if (currentNumbers.length !== 0) {
                 // find new numbers
@@ -265,6 +270,7 @@ class Opendata extends Queue {
                     'Kharkiwska_obl': [],
                     'Dnipro_obl': [],
                     'Volynska_obl': [],
+                    'Electryc': [],
                 };
 
                 let isEmpty = true;
@@ -350,6 +356,11 @@ class Opendata extends Queue {
 
                         if (this.VOLYNSKA.test(number)) {
                             data['Volynska_obl'].push(el);
+
+                            isEmpty = false;
+                        }
+                        if (this.ELECTRIC.test(number)) {
+                            data['Electryc'].push(el);
 
                             isEmpty = false;
                         }
