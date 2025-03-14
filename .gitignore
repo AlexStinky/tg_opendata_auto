@@ -1,13 +1,12 @@
 .idea
 /.vscode
 /node_modules
-
+/logs
 .env
 
 pass.txt
 
 config.json
-package-lock.json
 
 authorized_keys
 id_*
