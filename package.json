@@ -19,7 +19,8 @@
         "telegraf": "^3.38.0",
         "telegraf-i18n": "^6.6.0",
         "telegraf-ratelimit": "^2.0.0",
-        "telegraf-session-local": "^2.1.0"
+        "telegraf-session-local": "^2.1.0",
+        "winston": "^3.17.0"
     },
     "devDependencies": {
         "nodemon": "^3.0.2"

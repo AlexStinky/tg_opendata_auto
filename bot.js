@@ -1,5 +1,5 @@
 require('dotenv').config();
-//require('./scripts/logger').start();
+require('./scripts/logger').start();
 
 const { Telegraf } = require('telegraf');
 const {

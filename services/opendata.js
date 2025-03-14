@@ -219,7 +219,16 @@ class Opendata extends Queue {
                 data
             };
 
-            const res = await axios.request(config);
+            let res;
+            try {
+                res = await axios.request(config);
+            } catch (e) {
+                if (e.status >= 500 && e.status < 600) {
+                    return [];
+                } else {
+                    throw e;
+                }
+            }
 
             if (res.data) {
                 const $ = cheerio.load(res.data);
