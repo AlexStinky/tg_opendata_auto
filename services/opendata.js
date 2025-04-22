@@ -259,7 +259,7 @@ class Opendata extends Queue {
             // get all numbers
             const csrfToken = await this.fetchData();
             const currentNumbers = [
-                ...await this.postData(csrfToken, 'electric_car'),
+                // ...await this.postData(csrfToken, 'electric_car'),
                 ...await this.postData(csrfToken, 'light_car_and_truck'),
             ]
 

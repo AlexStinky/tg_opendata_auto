@@ -75,56 +75,56 @@ const allTscList = [
     //     region: '7',
     //     tscNumber: 'ТСЦ 2146'
     // },
-    // { // KYIV
-    //     region: '26',
-    //     tscNumber: 'ТСЦ 8041'
-    // }, {
-    //     region: '26',
-    //     tscNumber: 'ТСЦ 8043'
-    // }, {
-    //     region: '26',
-    //     tscNumber: 'ТСЦ 8044'
-    // }, {
-    //     region: '26',
-    //     tscNumber: 'ТСЦ 8045'
-    // }, {
-    //     region: '26',
-    //     tscNumber: 'ТСЦ 8046'
-    // }, {
-    //     region: '26',
-    //     tscNumber: 'ТСЦ 8047'
-    // }, {
-    //     region: '26',
-    //     tscNumber: 'ТСЦ 8048'
-    // },
-    // { // KYIV OBLAST
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3241'
-    // }, {
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3242'
-    // }, {
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3243'
-    // }, {
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3244'
-    // }, {
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3245'
-    // }, {
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3246'
-    // }, {
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3247'
-    // }, {
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3248'
-    // }, {
-    //     region: '10',
-    //     tscNumber: 'ТСЦ 3249'
-    // },
+    { // KYIV
+        region: '26',
+        tscNumber: 'ТСЦ 8041'
+    }, {
+        region: '26',
+        tscNumber: 'ТСЦ 8043'
+    }, {
+        region: '26',
+        tscNumber: 'ТСЦ 8044'
+    }, {
+        region: '26',
+        tscNumber: 'ТСЦ 8045'
+    }, {
+        region: '26',
+        tscNumber: 'ТСЦ 8046'
+    }, {
+        region: '26',
+        tscNumber: 'ТСЦ 8047'
+    }, {
+        region: '26',
+        tscNumber: 'ТСЦ 8048'
+    },
+    { // KYIV OBLAST
+        region: '10',
+        tscNumber: 'ТСЦ 3241'
+    }, {
+        region: '10',
+        tscNumber: 'ТСЦ 3242'
+    }, {
+        region: '10',
+        tscNumber: 'ТСЦ 3243'
+    }, {
+        region: '10',
+        tscNumber: 'ТСЦ 3244'
+    }, {
+        region: '10',
+        tscNumber: 'ТСЦ 3245'
+    }, {
+        region: '10',
+        tscNumber: 'ТСЦ 3246'
+    }, {
+        region: '10',
+        tscNumber: 'ТСЦ 3247'
+    }, {
+        region: '10',
+        tscNumber: 'ТСЦ 3248'
+    }, {
+        region: '10',
+        tscNumber: 'ТСЦ 3249'
+    },
     // { // LVIVSKA
     //     region: '13',
     //     tscNumber: 'ТСЦ 4641'
