@@ -1,0 +1,12 @@
+services:
+  tgautobot:
+    image: haldefine/tgautobot
+    platform: linux/amd64
+    container_name: tgautobot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../logs:/app/logs
+    stop_grace_period: 10m
+    restart: unless-stopped
